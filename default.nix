@@ -2,7 +2,7 @@
 , stdenv
 , rev
 , fuse
-, osxfuse
+, macfuse-stubs
 }:
 
 stdenv.mkDerivation {
@@ -15,11 +15,14 @@ stdenv.mkDerivation {
   ] ++ lib.optionals stdenv.isLinux [
     fuse
   ] ++ lib.optionals stdenv.isDarwin [
-    osxfuse
+    macfuse-stubs
   ];
 
   dontConfigure = true;
   makeFlags = [ "PREFIX=$(out)" ];
+
+  NIX_CFLAGS_COMPILE = lib.optionalString stdenv.isDarwin "-I${macfuse-stubs}/include";
+  NIX_LDFLAGS = lib.optionalString stdenv.isDarwin "-L${macfuse-stubs}/lib";
 
   preInstall = ''
     mkdir -p $out/lib
