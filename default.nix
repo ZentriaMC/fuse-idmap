@@ -11,18 +11,17 @@ stdenv.mkDerivation {
 
   src = ./.;
 
-  buildInputs = [
-  ] ++ lib.optionals stdenv.isLinux [
-    fuse
-  ] ++ lib.optionals stdenv.isDarwin [
-    macfuse-stubs
-  ];
+  buildInputs =
+    lib.optional stdenv.isLinux fuse ++
+    lib.optional stdenv.isDarwin macfuse-stubs;
 
   dontConfigure = true;
   makeFlags = [ "PREFIX=$(out)" ];
 
-  NIX_CFLAGS_COMPILE = lib.optionalString stdenv.isDarwin "-I${macfuse-stubs}/include";
-  NIX_LDFLAGS = lib.optionalString stdenv.isDarwin "-L${macfuse-stubs}/lib";
+  postPatch = ''
+    substituteInPlace Makefile \
+      --replace "-losxfuse" "-lfuse"
+  '';
 
   preInstall = ''
     mkdir -p $out/lib
